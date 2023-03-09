@@ -42,6 +42,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run deprem bot on demand
+        if: ${{ github.event_name != 'schedule' }}
         run: |
           python deprem.py
         env:

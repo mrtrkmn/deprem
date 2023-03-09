@@ -15,6 +15,9 @@ on:
         description: "Bildirim almak istediğiniz zaman aralığı"
         required: false
         default: "5"
+env:
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
 permissions:
   contents: read
@@ -37,11 +40,17 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run deprem bot
+      - name: Run deprem bot on demand
         run: |
           python deprem.py
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          CITY_TO_BE_CHECKED: ${{ github.event.inputs.sehir }}
+          CITY_TO_BE_CHECKED: "${{ github.event.inputs.sehir }}"
           TIME_INTERVAL: ${{ github.event.inputs.zaman_araligi }}
+
+      - name: Run deprem bot on schedule
+        if: ${{ github.event_name == 'schedule' }}
+        run: |
+          python scheduled.py
+        env:
+          CITY_TO_BE_CHECKED: "Kayseri"
+          TIME_INTERVAL: "5"

@@ -2,8 +2,9 @@ name: Run deprem bot
 
 on:
   schedule:
-    # every 5 minutes
-    - cron: "*/5 * * * *"
+    # every 15 minutes (shortest interval)
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
+    - cron: "*/15 * * * *"
 
   workflow_dispatch:
     inputs:
@@ -53,4 +54,4 @@ jobs:
           python deprem.py
         env:
           CITY_TO_BE_CHECKED: "Kayseri"
-          TIME_INTERVAL: "5"
+          TIME_INTERVAL: "15"

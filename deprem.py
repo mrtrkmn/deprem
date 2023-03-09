@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 
 KANDILLI_URL = "http://www.koeri.boun.edu.tr/scripts/lasteq.asp"
 
-STELEGRAM_CHAT_ID = environ.get("TELEGRAM_CHAT_ID")
+TELEGRAM_CHAT_ID = environ.get("TELEGRAM_CHAT_ID")
 TELEGRAM_TOKEN = environ.get("TELEGRAM_TOKEN")
 TIME_INTERVAL = environ.get("TIME_INTERVAL")  # minutes
 CITY_TO_BE_CHECKED = environ.get("CITY_TO_BE_CHECKED")

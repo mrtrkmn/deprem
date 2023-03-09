@@ -150,9 +150,14 @@ for line in reader:
         timestamp = datetime.strptime(date_time, "%Y.%m.%d %H:%M:%S").replace(tzinfo=timezone.utc).replace(tzinfo=None)
         current_timestamp = datetime.utcnow().replace(tzinfo=None)
         time_difference = (current_timestamp - timestamp).total_seconds() / 60
+
         if time_difference <= TIME_INTERVAL and CITY_TO_BE_CHECKED.upper() in city.upper():
-            message = f"""Tarih/Zaman: {attributes[0]} {attributes[1]}\n\nŞehir: {city}\n\nDerinlik(km): {attributes[4]}\t MD: {attributes[5]}\t ML: {attributes[6]}\tMw: {attributes[7]}\n\nKaynak: Kandilli Rasathanesi ve Deprem Araştırma Enstitüsü """
-            send_message(message)
+            message = f"""Tarih/Zaman: {attributes[0]} {attributes[1]}\nŞehir: {city}\nDerinlik(km): {attributes[4]}\t MD: {attributes[5]}\t ML: {attributes[6]}\tMw: {attributes[7]}\nKaynak: Kandilli Rasathanesi ve Deprem Araştırma Enstitüsü """
+            if TELEGRAM_TOKEN is None or TELEGRAM_CHAT_ID is None:
+                print("-"*50 )
+                print(message.strip())
+            else:
+                send_message(message)
     except Exception as e:
-        print(e)
+        # print(e)
         continue

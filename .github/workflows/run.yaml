@@ -50,7 +50,7 @@ jobs:
       - name: Run deprem bot on schedule
         if: ${{ github.event_name == 'schedule' }}
         run: |
-          python scheduled.py
+          python deprem.py
         env:
           CITY_TO_BE_CHECKED: "Kayseri"
           TIME_INTERVAL: "5"

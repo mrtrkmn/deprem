@@ -46,8 +46,13 @@ Bunları "Github secrets" üzerinden kaydediyoruz. Bu kaynak Ingilizce olsa da n
 
 Bu adımları ayarladıktan sonra sadece son olarak Şehir ve Zaman değerini şuradan ayarlamalısınız. 
 
-- Aranan şehiri değiştirmek için: [.github/workflows/run.yaml#L9](.github/workflows/run.yaml#L9)
-- Zaman aralığını değiştirmek için: [.github/workflows/run.yaml#L16](.github/workflows/run.yaml#L16) 
+- Aranan şehiri değiştirmek için: [.github/workflows/run.yaml#L55](.github/workflows/run.yaml#L55)
+- Zaman aralığını değiştirmek için: [.github/workflows/run.yaml#L6](.github/workflows/run.yaml#L6) ve [.github/workflows/run.yaml#L56](.github/workflows/run.yaml#L56) değerlerini değiştirmeniz gerekmektedir.
+
+** Not: ** Zaman aralığını değiştirmek için, `cron` formatında değer vermeniz gerekmektedir. Sadece dakika değerini değiştirmek istiyorsanız, `*/5 * * * *` değerinde bulunan `5` değerini değiştirmeniz yeterli olacaktır. 
+
+Burada bulunan değer [.github/workflows/run.yaml#L56](.github/workflows/run.yaml#L56) ile uyumlu olmalıdır. 
+
 
 --- 
 

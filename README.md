@@ -49,7 +49,7 @@ Bu adımları ayarladıktan sonra sadece son olarak Şehir ve Zaman değerini ş
 - Aranan şehiri değiştirmek için: [.github/workflows/run.yaml#L55](.github/workflows/run.yaml#L55)
 - Zaman aralığını değiştirmek için: [.github/workflows/run.yaml#L6](.github/workflows/run.yaml#L6) ve [.github/workflows/run.yaml#L56](.github/workflows/run.yaml#L56) değerlerini değiştirmeniz gerekmektedir.
 
-** Not: ** Zaman aralığını değiştirmek için, `cron` formatında değer vermeniz gerekmektedir. Sadece dakika değerini değiştirmek istiyorsanız, `*/5 * * * *` değerinde bulunan `5` değerini değiştirmeniz yeterli olacaktır. 
+** Not: ** Zaman aralığını değiştirmek için, `cron` formatında değer vermeniz gerekmektedir. Buradan cron formatlarına bakabilirsiniz: https://crontab.guru  Sadece dakika değerini değiştirmek istiyorsanız, `*/5 * * * *` değerinde bulunan `5` değerini değiştirmeniz yeterli olacaktır. 
 
 Burada bulunan değer [.github/workflows/run.yaml#L56](.github/workflows/run.yaml#L56) ile uyumlu olmalıdır. 
 

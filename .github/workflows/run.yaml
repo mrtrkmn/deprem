@@ -55,4 +55,4 @@ jobs:
           python deprem.py
         env:
           CITY_TO_BE_CHECKED: "Kayseri"
-          TIME_INTERVAL: "15"
+          TIME_INTERVAL: "60"

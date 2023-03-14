@@ -57,3 +57,4 @@ jobs:
         env:
           CITY_TO_BE_CHECKED: "Kayseri"
           TIME_INTERVAL: "5"
+

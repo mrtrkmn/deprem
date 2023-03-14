@@ -53,7 +53,4 @@ Bu adımları ayarladıktan sonra sadece son olarak Şehir ve Zaman değerini ş
 
 Burada bulunan değer [.github/workflows/run.yaml#L56](.github/workflows/run.yaml#L56) ile uyumlu olmalıdır. 
 
-
 --- 
-
-- todo: add more info 

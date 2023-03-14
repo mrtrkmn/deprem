@@ -116,7 +116,7 @@ except Exception as e:
 
 # get data from kandilli url and parse it
 try:
-    response = requests.get(KANDILLI_URL)
+    response = requests.get(KANDILLI_URL, timeout=10)
     html_content = response.content
     soup = BeautifulSoup(html_content, "html.parser")
 except Exception as e:
@@ -128,7 +128,7 @@ except Exception as e:
 def send_message(message):
     try:
         response = requests.get(
-            f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={TELEGRAM_CHAT_ID}&text={message}"
+            f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={TELEGRAM_CHAT_ID}&text={message}", timeout=10
         )
         if response.status_code != 200:
             print("Error while sending message: ", response.status_code)

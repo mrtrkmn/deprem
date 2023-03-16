@@ -1,7 +1,8 @@
 # Kandilli Rasathanesi ve Deprem Araştırma Enstitüsü'nün
 # http://www.koeri.boun.edu.tr/scripts/lasteq.asp adresinden
 # son 24 saatte meydana gelen depremlerin içerisinden
-# aranan şehire göre bildirim gönderen script
+# aranan şehire göre bildirim gönderen ve
+# Aynı zamanda detaylı aramak yaparak veri seti indirebileceğiniz bir script
 
 import csv
 import datetime as dt
@@ -449,3 +450,4 @@ if __name__ == "__main__":
             dep = deprem_bot.search_on_kandilli_with_selenium(
                 start_date, end_date, min_depth, max_depth, min_magnitude, max_magnitude, ordered_by, sorting_type
             )
+

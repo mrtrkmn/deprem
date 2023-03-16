@@ -140,8 +140,7 @@ class Deprem:
             # add user agent to avoid bot detection
             self.chrome_options.add_experimental_option("prefs", preferences)
             self.chrome_options.add_argument(self.headers)
-            # if environ.get("LOCAL_DEV") != "True":
-            #     self.chrome_options.add_argument("--headless")
+            self.chrome_options.add_argument("--headless")
             self.chrome_options.add_argument("--no-sandbox")
             self.chrome_options.add_argument("--disable-dev-shm-usage")
             self.chrome_options.add_argument("--start-maximized")

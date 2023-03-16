@@ -18,13 +18,14 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 
 KANDILLI_URL = "http://www.koeri.boun.edu.tr/scripts/lasteq.asp"
 SEARCH_RECENT_FOR_EVENTS = "http://sc3.koeri.boun.edu.tr/eqevents/eq_events"
 TELEGRAM_CHAT_ID = environ.get("TELEGRAM_CHAT_ID")
 TELEGRAM_TOKEN = environ.get("TELEGRAM_TOKEN")
 CITY_TO_BE_CHECKED = environ.get("CITY_TO_BE_CHECKED")
-CHROME_EXECUTABLE_PATH = environ.get("CHROME_EXECUTABLE_PATH")
+
 # create array of cities in Turkey
 CITIES = [
     "ADANA",
@@ -120,25 +121,19 @@ class Deprem:
         else:
             self.time_interval = 5
 
-        if environ.get("DATA_DIR"):
-            self.data_dir = environ.get("DATA_DIR")
-        else:
-            self.data_dir = "./dat/"
-
     def __exit__(self, exc_type, exc_value, traceback):
         if self.is_selenium_active:
             self.driver.quit()
+            print("Verilen kriterlere uygun arama sonlandırıldı ...")
 
     def __enter__(self):
         if self.is_selenium_active:
-            self.headers = "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36"
-
             self.chrome_options = webdriver.ChromeOptions()
-            self.executable_path = CHROME_EXECUTABLE_PATH
-            preferences = {"download.default_directory": self.data_dir}
+            # self.executable_path = CHROME_EXECUTABLE_PATH
 
             # add user agent to avoid bot detection
-            self.chrome_options.add_experimental_option("prefs", preferences)
+            self.headers = "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36"
+
             self.chrome_options.add_argument(self.headers)
             self.chrome_options.add_argument("--headless")
             self.chrome_options.add_argument("--no-sandbox")
@@ -147,9 +142,9 @@ class Deprem:
             self.chrome_options.add_argument("--window-size=1920,1080")
             self.chrome_options.add_argument("--disable-gpu")
             self.chrome_options.add_experimental_option("detach", True)
-            self.chrome_service = ChromeService(executable_path=self.executable_path)
+            self.chrome_service = ChromeService(ChromeDriverManager().install())
             self.driver = webdriver.Chrome(service=self.chrome_service, options=self.chrome_options)
-
+            print("Verilen kriterlere uygun arama başlatıldı ...")
         return self
 
     def send_message(self, message):
@@ -323,12 +318,8 @@ class Deprem:
         ALLOWED_VALUES = ["Origin Time UTC", "Longitude", "Latitude", "Magnitude", "Depth"]
 
         if choose not in ALLOWED_VALUES:
-            print("Choosing default value: ", "Origin Time UTC")
+            print("Varolan değer ile devam ediliyor: ", "Origin Time UTC")
             choose = "Origin Time UTC"
-
-        if choose not in ALLOWED_VALUES:
-            print("Choose one of the following values: ", ALLOWED_VALUES)
-            exit(1)
 
         try:
             dropdown_element = Select(self.driver.find_element(By.XPATH, ORDERED_BY))
@@ -341,12 +332,12 @@ class Deprem:
         ASC_DESC = '//*[@id="myPost"]/fieldset/table/tbody/tr[12]/td[3]/select'
 
         if choose.lower() not in ORDER_TYPE:
-            print("Choose one of the following values: ", ORDER_TYPE)
-            choose = "ascending"
+            choose = "descending"
+            print("Kullanıcı herhangi bir değer girmedi, otomatik olarak descending seçildi")
 
         try:
             sorting_value = Select(self.driver.find_element(By.XPATH, ASC_DESC))
-            sorting_value.select_by_visible_text(choose)
+            sorting_value.select_by_visible_text(choose.lower())
         except Exception as e:
             print(e)
 
@@ -386,7 +377,12 @@ class Deprem:
 
         timestamp = dt.datetime.now().strftime("%d_%m_%Y")
         data_file_name = "deprem_data_" + timestamp + ".xlsx"
-        self.export_data_to_excel_file(data_file_name)
+        try:
+            self.export_data_to_excel_file(data_file_name)
+        except Exception as e:
+            print(e)
+            exit(1)
+        print(f"Deprem verileri {data_file_name} excel dosyasina aktarildi\n ")
 
 
 # create main function
@@ -397,7 +393,7 @@ if __name__ == "__main__":
     print("1. Sehir ve zamana bağlı arama yap")
     print("2. Detaylı arama yaparak, istenilen veriyi excel dosyasına aktar\n")
 
-    choose = input("Seciminiz: ")
+    choose = input("Seçiminiz: ")
 
     if choose == "1":
         with Deprem(is_selenium_active=False) as deprem_bot:
@@ -428,17 +424,8 @@ if __name__ == "__main__":
         sorting_type = ""
 
         if user_input == "e":
-            from_year = input("Baslangic yili: (YYYY)\n")
-            from_month = input("Baslangic ayi: (MM) \n")
-            from_day = input("Baslangic gunu: (DD)\n")
-
-            start_date = from_year + "-" + from_month + "-" + from_day
-
-            to_year = input("Bitis yili: (YYYY)\n")
-            to_month = input("Bitis ayi: (MM)\n")
-            to_day = input("Bitis gunu: (DD)\n")
-
-            end_date = to_year + "-" + to_month + "-" + to_day
+            start_date = input("Baslangic tarihi: (YYYY-MM-DD)\n")
+            end_date = input("Bitis tarihi: (YYYY-MM-DD)\n")
 
         user_input = input("Derinlik aralığı belirlemek istiyor musunuz ? (e/h)\n")
 

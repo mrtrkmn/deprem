@@ -14,10 +14,8 @@ import requests
 import unidecode
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
@@ -398,7 +396,7 @@ if __name__ == "__main__":
     print("Deprem Botu Baslatiliyor...")
     print("Ne yapmak istersiniz?")
     print("1. Sehir ve zamana bağlı arama yap")
-    print("2. Detaylı arama yaparak, istenilen veriyi excel dosyasına aktar")
+    print("2. Detaylı arama yaparak, istenilen veriyi excel dosyasına aktar\n")
 
     choose = input("Seciminiz: ")
 
@@ -416,7 +414,7 @@ if __name__ == "__main__":
             "Detaylı arama yapabilmek için, aşağıdaki bilgileri giriniz, boş bırakmak istediğiniz alanları boş bırakınız"
         )
 
-        user_input = input("Tarih aralığı belirlemek istiyor musunuz ? (e/h)")
+        user_input = input("Tarih aralığı belirlemek istiyor musunuz ? (e/h)\n")
 
         start_date = ""
         end_date = ""

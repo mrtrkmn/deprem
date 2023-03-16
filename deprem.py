@@ -219,7 +219,7 @@ class Deprem:
                 # print(e)
                 continue
 
-    def select_from_year(self, year, month, day):
+    def select_from_date(self, year, month, day):
         FROM_YEAR_XPATH = '//*[@id="fromTY"]'
         FROM_MONTH_XPATH = '//*[@id="fromTM"]'
         FROM_DAY_XPATH = '//*[@id="fromTD"]'
@@ -358,18 +358,38 @@ class Deprem:
         df = all_tables[0]
         df.to_excel(file_name)
 
+    def filter_based_on_city(self, city, file_name):
+        # n could be year or month or day
+        all_tables = pd.read_html(self.driver.page_source, attrs={"class": "index"})
+        df = all_tables[0]
+        filtered_df = df[df["Yer-Region Name"].str.contains(unidecode.unidecode(city), case=False)]
+        filtered_df.to_excel(file_name)
+
+    def set_dates(self, from_date, to_date):
+        if self.check_date_time(from_date) and self.check_date_time(to_date):
+            from_year, from_month, from_day = from_date.split("-")
+            to_year, to_month, to_day = to_date.split("-")
+            self.select_from_date(from_year, from_month, from_day)
+            self.select_to_year(to_year, to_month, to_day)
+
+    def search_and_filter_on_kandilli(self, from_date, to_date, city):
+        self.driver.get(SEARCH_RECENT_FOR_EVENTS)
+        self.set_dates(from_date, to_date)
+        file_name = f"{city.lower()}_depremleri_{from_date}_den_beri.xlsx"
+
+        self.apply_changes()
+        try:
+            self.filter_based_on_city(city, file_name)
+        except Exception as ex:
+            print(ex)
+            exit(1)
+
     def search_on_kandilli_with_selenium(
         self, start_date, end_date, min_depth, max_depth, min_magnitude, max_magnitude, sorting, asc_desc
     ):
         self.driver.get(SEARCH_RECENT_FOR_EVENTS)
 
-        if not start_date or not end_date:
-            if self.check_date_time(start_date) and self.check_date_time(end_date):
-                from_year, from_month, from_day = start_date.split("-")
-                to_year, to_month, to_day = end_date.split("-")
-                self.select_from_year(from_year, from_month, from_day)
-                self.select_to_year(to_year, to_month, to_day)
-
+        self.set_dates(start_date, end_date)
         self.set_depth(min_depth, max_depth)
         self.set_magnitude(min_magnitude, max_magnitude)
         self.set_sorting(sorting)
@@ -386,13 +406,12 @@ class Deprem:
         print(f"Deprem verileri {data_file_name} excel dosyasina aktarildi\n ")
 
 
-# create main function
 if __name__ == "__main__":
-    #
-    print("Deprem Botu Baslatiliyor...")
+    print("Deprem veri çekme programı başlatılıyor...")
     print("Ne yapmak istersiniz?")
-    print("1. Sehir ve zamana bağlı arama yap")
-    print("2. Detaylı arama yaparak, istenilen veriyi excel dosyasına aktar\n")
+    print("1. Şehir ve zamana bağlı arama ya ve yazdır")
+    print("2. Detaylı arama yaparak, istenilen veriyi excel dosyasına aktar")
+    print("3. Şehir bazında geçmişe dair verileri excel dosyasına aktar\n")
 
     choose = input("Seçiminiz: ")
 
@@ -451,3 +470,38 @@ if __name__ == "__main__":
                 start_date, end_date, min_depth, max_depth, min_magnitude, max_magnitude, ordered_by, sorting_type
             )
 
+    if choose == "3":
+        city = input("Sehir giriniz: ")
+        date = input(
+            "Geçmişe dair verileri almak için aşağıda belirtildiği şekilde zaman belirtiniz:\n * 3A - Son 3 Aydaki veriler\n * 3Y - Son 3 Yildaki veriler\n * 3D - Son 3 Gunluk veriler\n"
+        )
+
+        if date[-1] not in ["A", "Y", "D"]:
+            print("Kabul edilen zaman dilimleri: A (Ay), Y (Yil), D (Gun) \n")
+            print("Yanlis zaman dilimi belirttiniz, program kapatiliyor...")
+            exit(1)
+
+        # take digit part of the string
+        time_interval = date[:-1]
+        if not time_interval.isdigit():
+            print("Zaman dilimi rakam olmalıdır. Program kapatiliyor...")
+            exit(1)
+
+        if date[-1] == "A":
+            from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 30)
+        if date[-1] == "Y":
+            from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 365)
+        if date[-1] == "D":
+            from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval))
+
+        from_date = from_date.strftime("%Y-%m-%d")
+        now_date = dt.datetime.now().strftime("%Y-%m-%d")
+
+        with Deprem(is_selenium_active=True) as deprem_bot:
+            deprem_bot.check_city_input(city)
+            # extract data is either sending message to telegram or printing to console
+            deprem_bot.search_and_filter_on_kandilli(from_date, now_date, city)
+
+    if choose not in ["1", "2", "3"]:
+        print("Yanlis secim yaptiniz, program kapatiliyor...")
+        exit(1)

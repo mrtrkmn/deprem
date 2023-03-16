@@ -190,8 +190,15 @@ class Deprem:
             print(e)
             exit(1)
 
-    def extract_data(self, table):
+    def extract_data(self, table, city_to_be_checked, time_interval):
         # find the earthquake pre table
+
+        try:
+            time_interval = int(time_interval)
+        except ValueError:
+            print("Lütfen zaman aralığını sayı olarak giriniz.")
+            exit(1)
+
         buff = StringIO(table)
         reader = csv.reader(buff)
 
@@ -208,8 +215,9 @@ class Deprem:
                 )
                 current_timestamp = dt.datetime.utcnow().replace(tzinfo=None)
                 time_difference = (current_timestamp - timestamp).total_seconds() / 60
-                if time_difference <= self.time_interval and CITY_TO_BE_CHECKED.upper() in city.upper():
-                    message = f"""Tarih/Zaman: {attributes[0]} {attributes[1]}\n\nŞehir: {city}\n\nDerinlik(km): {attributes[4]}\t MD: {attributes[5]}\t ML: {attributes[6]}\tMw: {attributes[7]}\n\nKaynak: Kandilli Rasathanesi ve Deprem Araştırma Enstitüsü """
+                if time_difference <= time_interval and city_to_be_checked.upper() in city.upper():
+                    print("-" * 100)
+                    message = f"""Tarih/Zaman: {attributes[0]} {attributes[1]}\nŞehir: {city}\nDerinlik(km): {attributes[4]}\t MD: {attributes[5]}\t ML: {attributes[6]}\tMw: {attributes[7]}\nKaynak: Kandilli Rasathanesi ve Deprem Araştırma Enstitüsü """
                     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
                         print(message)
                     else:
@@ -314,7 +322,7 @@ class Deprem:
             print(e)
 
     def set_sorting(self, choose):
-        ORDERED_BY = '//*[@id="myPost"]/fieldset/table/tbody/tr[12]/td[2]'
+        ORDERED_BY = '//*[@id="myPost"]/fieldset/table/tbody/tr[12]/td[2]/select'
         ALLOWED_VALUES = ["Origin Time UTC", "Longitude", "Latitude", "Magnitude", "Depth"]
 
         if choose not in ALLOWED_VALUES:
@@ -335,9 +343,9 @@ class Deprem:
         ORDER_TYPE = ["ascending", "descending"]
         ASC_DESC = '//*[@id="myPost"]/fieldset/table/tbody/tr[12]/td[3]/select'
 
-        if choose not in ORDER_TYPE:
+        if choose.lower() not in ORDER_TYPE:
             print("Choose one of the following values: ", ORDER_TYPE)
-            choose = "Ascending"
+            choose = "ascending"
 
         try:
             sorting_value = Select(self.driver.find_element(By.XPATH, ASC_DESC))
@@ -397,11 +405,11 @@ if __name__ == "__main__":
     if choose == "1":
         with Deprem(is_selenium_active=False) as deprem_bot:
             city = input("Sehir giriniz: ")
-            time_interval = input("Zaman araligi giriniz:  (* 90: son 90 dk icindeki depremler)")
+            time_interval = input("Zaman araligi giriniz:  (* 90: son 90 dk icindeki depremler)\n")
             deprem_bot.check_city_input(city)
             depremler = deprem_bot.get_data_from_kandilli()
             # extract data is either sending message to telegram or printing to console
-            deprem_bot.extract_data(depremler)
+            deprem_bot.extract_data(depremler, city, time_interval)
 
     if choose == "2":
         print(
@@ -423,35 +431,35 @@ if __name__ == "__main__":
         sorting_type = ""
 
         if user_input == "e":
-            from_year = input("Baslangic yili: (YYYY)")
-            from_month = input("Baslangic ayi: (MM) ")
-            from_day = input("Baslangic gunu: (DD)")
+            from_year = input("Baslangic yili: (YYYY)\n")
+            from_month = input("Baslangic ayi: (MM) \n")
+            from_day = input("Baslangic gunu: (DD)\n")
 
             start_date = from_year + "-" + from_month + "-" + from_day
 
-            to_year = input("Bitis yili: (YYYY)")
-            to_month = input("Bitis ayi: (MM)")
-            to_day = input("Bitis gunu: (DD)")
+            to_year = input("Bitis yili: (YYYY)\n")
+            to_month = input("Bitis ayi: (MM)\n")
+            to_day = input("Bitis gunu: (DD)\n")
 
             end_date = to_year + "-" + to_month + "-" + to_day
 
-        user_input = input("Derinlik aralığı belirlemek istiyor musunuz ? (e/h)")
+        user_input = input("Derinlik aralığı belirlemek istiyor musunuz ? (e/h)\n")
 
         if user_input == "e":
-            min_depth = input("Minimum derinlik: (km))")
-            max_depth = input("Maksimum derinlik: (km)")
+            min_depth = float(input("Minimum derinlik: (km))\n"))
+            max_depth = float(input("Maksimum derinlik: (km)\n"))
 
-        user_input = input("Büyüklük aralığı belirlemek istiyor musunuz ? (e/h)")
-
-        if user_input == "e":
-            min_magnitude = input("Minimum buyukluk: (Richter)")
-            max_magnitude = input("Maksimum buyukluk: (Richter)")
-
-        user_input = input("Siralamak istiyor musunuz ? (e/h)")
+        user_input = input("Büyüklük aralığı belirlemek istiyor musunuz ? (e/h)\n")
 
         if user_input == "e":
-            ordered_by = input("Siralanma kriteri: *(Origin Time UTC, Longitude, Latitude, Magnitude, Depth)*")
-            sorting_type = input("Siralama tipi: *(Ascending, Descending)*")
+            min_magnitude = float(input("Minimum buyukluk: (Richter)\n"))
+            max_magnitude = float(input("Maksimum buyukluk: (Richter)\n"))
+
+        user_input = input("Siralamak istiyor musunuz ? (e/h)\n")
+
+        if user_input == "e":
+            ordered_by = input("Siralanma kriteri: *(Origin Time UTC, Longitude, Latitude, Magnitude, Depth)*\n")
+            sorting_type = input("Siralama tipi: *(Ascending, Descending)*\n")
 
         with Deprem(is_selenium_active=True) as deprem_bot:
             dep = deprem_bot.search_on_kandilli_with_selenium(

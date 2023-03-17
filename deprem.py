@@ -416,7 +416,7 @@ def retrive_data_from_kandilli(city, time_interval):
 
 
 if __name__ == "__main__":
-    if TELEGRAM_CHAT_ID != "" and TELEGRAM_TOKEN != "":
+    if TELEGRAM_CHAT_ID is not None or TELEGRAM_TOKEN is not None:
         retrive_data_from_kandilli(CITY_TO_BE_CHECKED, TIME_INTERVAL)
         exit(0)
 

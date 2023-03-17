@@ -16,9 +16,7 @@
         else
             echo "Sanal ortam oluşturulamadı."
             exit 1
-        fi
-        echo "Sanal ortam etkinleştiriliyor..."    
-        
+        fi        
         if [ -f "requirements.txt" ]; then
             echo "Gerekli kütüphaneler yükleniyor..."
             pip install  -q  -r requirements.txt

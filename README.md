@@ -11,15 +11,15 @@ Eğer bilgisayarınızda Python 3.8 ve üzeri sürümleri mevcut ise, aşağıda
 ```bash
 $ git clone https://github.com/mrtrkmn/deprem.git
 $ cd deprem
-$ bash run-tr.sh
+$ bash sanal_ortam_olustur.sh
+$ source venv/bin/activate
+$ python deprem.py
 ```
+
 Daha sonraki adımlar aşağıda verilen örnek video ile anlatılmıştır.
 
 https://user-images.githubusercontent.com/13614433/224980979-5623b07c-28d1-4186-ac5a-d7f79a716887.mov
 
-
-Burada yeniden aramak yapmak isterseniz son iki adıma `n` değerini girerek devam edebilirsiniz.
-Daha sonrasında komutu (`bash run-tr.sh`) yeniden çalıştırarak yeni bir arama yapabilirsiniz.
 
 # Telegram Entegrasyonu ile Nasıl kullanılır ?
 

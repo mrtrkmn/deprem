@@ -384,6 +384,7 @@ class Deprem:
         except Exception as ex:
             print(ex)
             exit(1)
+        print(f"{city} için {from_date} den beri olan deprem verisi:\n {file_name} dosyasına kaydedildi.")
 
     def search_on_kandilli_with_selenium(
         self, start_date, end_date, min_depth, max_depth, min_magnitude, max_magnitude, sorting, asc_desc

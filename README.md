@@ -18,7 +18,8 @@ $ python deprem.py
 
 Daha sonraki adımlar aşağıda verilen örnek video ile anlatılmıştır.
 
-https://user-images.githubusercontent.com/13614433/224980979-5623b07c-28d1-4186-ac5a-d7f79a716887.mov
+
+https://user-images.githubusercontent.com/13614433/225782006-ac91464e-a2da-445e-b557-ef2ac656a213.mov
 
 
 # Telegram Entegrasyonu ile Nasıl kullanılır ?

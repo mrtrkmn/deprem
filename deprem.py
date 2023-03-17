@@ -26,6 +26,7 @@ SEARCH_RECENT_FOR_EVENTS = "http://sc3.koeri.boun.edu.tr/eqevents/eq_events"
 TELEGRAM_CHAT_ID = environ.get("TELEGRAM_CHAT_ID")
 TELEGRAM_TOKEN = environ.get("TELEGRAM_TOKEN")
 CITY_TO_BE_CHECKED = environ.get("CITY_TO_BE_CHECKED")
+TIME_INTERVAL = environ.get("TIME_INTERVAL")
 
 # create array of cities in Turkey
 CITIES = [
@@ -406,7 +407,19 @@ class Deprem:
         print(f"Deprem verileri {data_file_name} excel dosyasina aktarildi\n ")
 
 
+def retrive_data_from_kandilli(city, time_interval):
+    with Deprem(is_selenium_active=False) as deprem_bot:
+        deprem_bot.check_city_input(city)
+        depremler = deprem_bot.get_data_from_kandilli()
+        # extract data is either sending message to telegram or printing to console
+        deprem_bot.extract_data(depremler, city, time_interval)
+
+
 if __name__ == "__main__":
+    if TELEGRAM_CHAT_ID != "" and TELEGRAM_TOKEN != "":
+        retrive_data_from_kandilli(CITY_TO_BE_CHECKED, TIME_INTERVAL)
+        exit(0)
+
     print("Deprem veri çekme programı başlatılıyor...")
     print("Ne yapmak istersiniz?")
     print("1. Şehir ve zamana bağlı arama ya ve yazdır")
@@ -416,13 +429,9 @@ if __name__ == "__main__":
     choose = input("Seçiminiz: ")
 
     if choose == "1":
-        with Deprem(is_selenium_active=False) as deprem_bot:
-            city = input("Sehir giriniz: ")
-            time_interval = input("Zaman araligi giriniz:  (* 90: son 90 dk icindeki depremler)\n")
-            deprem_bot.check_city_input(city)
-            depremler = deprem_bot.get_data_from_kandilli()
-            # extract data is either sending message to telegram or printing to console
-            deprem_bot.extract_data(depremler, city, time_interval)
+        city = input("Sehir giriniz: ")
+        time_interval = input("Zaman araligi giriniz:  (* 90: son 90 dk icindeki depremler)\n")
+        retrive_data_from_kandilli(city, time_interval)
 
     if choose == "2":
         print(

@@ -21,6 +21,7 @@ TELEGRAM_CHAT_ID = environ.get("TELEGRAM_CHAT_ID")
 TELEGRAM_TOKEN = environ.get("TELEGRAM_TOKEN")
 CITY_TO_BE_CHECKED = environ.get("CITY_TO_BE_CHECKED")
 TIME_INTERVAL = environ.get("TIME_INTERVAL")
+SAVE_DATA_TO_ARTIFACT = environ.get("SAVE_DATA_TO_ARTIFACT")
 
 # create array of cities in Turkey
 CITIES = [
@@ -272,9 +273,49 @@ def retrive_data_from_kandilli(city, time_interval):
         deprem_bot.extract_data(depremler, city, time_interval)
 
 
+# option #3
+def search_based_on_city(date, city):
+    if date[-1] not in ["A", "Y", "D"]:
+        print("Kabul edilen zaman dilimleri: A (Ay), Y (Yil), D (Gun) \n")
+        print("Yanlış zaman dilimi belirttiniz, program kapatılıyor...")
+        exit(1)
+
+    # take digit part of the string
+    time_interval = date[:-1]
+    if not time_interval.isdigit():
+        print("Zaman dilimi rakam olmalıdır. Program kapatiliyor...")
+        exit(1)
+
+    if date[-1] == "A":
+        from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 30)
+    if date[-1] == "Y":
+        from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 365)
+    if date[-1] == "D":
+        from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval))
+
+    from_date = from_date.strftime("%Y-%m-%d")
+    now_date = dt.datetime.now().strftime("%Y-%m-%d")
+
+    with Deprem() as deprem_bot:
+        deprem_bot.check_city_input(city)
+        deprem_bot.search_and_filter_on_kandilli(from_date, now_date, city)
+
+
 if __name__ == "__main__":
     if TELEGRAM_CHAT_ID is not None or TELEGRAM_TOKEN is not None:
         retrive_data_from_kandilli(CITY_TO_BE_CHECKED, TIME_INTERVAL)
+        exit(0)
+
+    if SAVE_DATA_TO_ARTIFACT == "True":
+        if CITY_TO_BE_CHECKED is None:
+            print("CITY_TO_BE_CHECKED degiskeni bos olamaz")
+            exit(1)
+        if TIME_INTERVAL[-1] not in ["A", "Y", "D"]:
+            print(
+                "TIME_INTERVAL degiskeni kabul edilen zaman dilimleri: A (Ay), Y (Yil), D (Gun), veriyi kaydetmet istediğinizde. \n"
+            )
+            exit(1)
+        search_based_on_city(city=CITY_TO_BE_CHECKED, date=TIME_INTERVAL)
         exit(0)
 
     print("Deprem veri çekme programı başlatılıyor...")
@@ -350,31 +391,7 @@ if __name__ == "__main__":
         date = input(
             "Geçmişe dair verileri almak için aşağıda belirtildiği şekilde zaman belirtiniz:\n * 3A - Son 3 Aydaki veriler\n * 3Y - Son 3 Yildaki veriler\n * 3D - Son 3 Gunluk veriler\n"
         )
-
-        if date[-1] not in ["A", "Y", "D"]:
-            print("Kabul edilen zaman dilimleri: A (Ay), Y (Yil), D (Gun) \n")
-            print("Yanlis zaman dilimi belirttiniz, program kapatiliyor...")
-            exit(1)
-
-        # take digit part of the string
-        time_interval = date[:-1]
-        if not time_interval.isdigit():
-            print("Zaman dilimi rakam olmalıdır. Program kapatiliyor...")
-            exit(1)
-
-        if date[-1] == "A":
-            from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 30)
-        if date[-1] == "Y":
-            from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 365)
-        if date[-1] == "D":
-            from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval))
-
-        from_date = from_date.strftime("%Y-%m-%d")
-        now_date = dt.datetime.now().strftime("%Y-%m-%d")
-
-        with Deprem() as deprem_bot:
-            deprem_bot.check_city_input(city)
-            deprem_bot.search_and_filter_on_kandilli(from_date, now_date, city)
+        search_based_on_city(date, city)
 
     if choose not in ["1", "2", "3"]:
         print("Yanlis secim yaptiniz, program kapatiliyor...")

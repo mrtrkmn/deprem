@@ -4,3 +4,4 @@ unidecode
 pandas
 lxml
 openpyxl
+html5lib

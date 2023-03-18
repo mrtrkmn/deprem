@@ -14,12 +14,6 @@ import pandas as pd
 import requests
 import unidecode
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import Select, WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
 KANDILLI_URL = "http://www.koeri.boun.edu.tr/scripts/lasteq.asp"
 SEARCH_RECENT_FOR_EVENTS = "http://sc3.koeri.boun.edu.tr/eqevents/eq_events"
@@ -27,6 +21,7 @@ TELEGRAM_CHAT_ID = environ.get("TELEGRAM_CHAT_ID")
 TELEGRAM_TOKEN = environ.get("TELEGRAM_TOKEN")
 CITY_TO_BE_CHECKED = environ.get("CITY_TO_BE_CHECKED")
 TIME_INTERVAL = environ.get("TIME_INTERVAL")
+SAVE_DATA_TO_ARTIFACT = environ.get("SAVE_DATA_TO_ARTIFACT")
 
 # create array of cities in Turkey
 CITIES = [
@@ -115,38 +110,18 @@ CITIES = [
 
 
 class Deprem:
-    def __init__(self, is_selenium_active=False):
+    def __init__(self):
         #    convert string input to int
-        self.is_selenium_active = is_selenium_active
-        if environ.get("TIME_INTERVAL"):
-            self.time_interval = int(environ.get("TIME_INTERVAL"))
-        else:
-            self.time_interval = 5
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self.is_selenium_active:
-            self.driver.quit()
-            print("Verilen kriterlere uygun arama sonlandırıldı ...")
+        if not environ.get("SAVE_DATA_TO_ARTIFACT"):
+            if environ.get("TIME_INTERVAL"):
+                self.time_interval = int(environ.get("TIME_INTERVAL"))
+            else:
+                self.time_interval = 5
 
     def __enter__(self):
-        if self.is_selenium_active:
-            self.chrome_options = webdriver.ChromeOptions()
-            # self.executable_path = CHROME_EXECUTABLE_PATH
+        return self
 
-            # add user agent to avoid bot detection
-            self.headers = "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36"
-
-            self.chrome_options.add_argument(self.headers)
-            self.chrome_options.add_argument("--headless")
-            self.chrome_options.add_argument("--no-sandbox")
-            self.chrome_options.add_argument("--disable-dev-shm-usage")
-            self.chrome_options.add_argument("--start-maximized")
-            self.chrome_options.add_argument("--window-size=1920,1080")
-            self.chrome_options.add_argument("--disable-gpu")
-            self.chrome_options.add_experimental_option("detach", True)
-            self.chrome_service = ChromeService(ChromeDriverManager().install())
-            self.driver = webdriver.Chrome(service=self.chrome_service, options=self.chrome_options)
-            print("Verilen kriterlere uygun arama başlatıldı ...")
+    def __exit__(self, exc_type, exc_value, traceback):
         return self
 
     def send_message(self, message):
@@ -220,205 +195,143 @@ class Deprem:
                 # print(e)
                 continue
 
-    def select_from_date(self, year, month, day):
-        FROM_YEAR_XPATH = '//*[@id="fromTY"]'
-        FROM_MONTH_XPATH = '//*[@id="fromTM"]'
-        FROM_DAY_XPATH = '//*[@id="fromTD"]'
-
-        WebDriverWait(self.driver, 30 * 5).until(EC.element_to_be_clickable((By.XPATH, FROM_YEAR_XPATH)))
-
-        try:
-            from_year_field = self.driver.find_element(By.XPATH, FROM_YEAR_XPATH)
-            from_year_field.clear()
-            from_year_field.send_keys(year)
-            time.sleep(0.5)
-            from_month_field = self.driver.find_element(By.XPATH, FROM_MONTH_XPATH)
-            from_month_field.clear()
-            from_month_field.send_keys(month)
-            time.sleep(0.5)
-            from_day_field = self.driver.find_element(By.XPATH, FROM_DAY_XPATH)
-            from_day_field.clear()
-            from_day_field.send_keys(day)
-            time.sleep(0.5)
-        except Exception as e:
-            print(e)
-            exit(1)
-
-    def select_to_year(self, year, month, day):
-        TO_YEAR_XPATH = '//*[@id="toY"]'
-        TO_MONTH_XPATH = '//*[@id="toM"]'
-        TO_DAY_XPATH = '//*[@id="toD"]'
-
-        WebDriverWait(self.driver, 30 * 5).until(EC.element_to_be_clickable((By.XPATH, TO_YEAR_XPATH)))
-
-        try:
-            to_year_field = self.driver.find_element(By.XPATH, TO_YEAR_XPATH)
-            to_year_field.clear()
-            to_year_field.send_keys(year)
-            time.sleep(0.5)
-            to_month_field = self.driver.find_element(By.XPATH, TO_MONTH_XPATH)
-            to_month_field.clear()
-            to_month_field.send_keys(month)
-            time.sleep(0.5)
-            to_day_field = self.driver.find_element(By.XPATH, TO_DAY_XPATH)
-            to_day_field.clear()
-            to_day_field.send_keys(day)
-            time.sleep(0.5)
-        except Exception as e:
-            print(e)
-            exit(1)
-
-    def set_depth(self, min, max):
-        MIN_DEPTH = '//*[@id="min_depth"]'
-        MAX_DEPTH = '//*[@id="max_depth"]'
-
-        if not min or not max:
-            min = 0
-            max = 60
-
-        if min > max or min < 0:
-            print("Derinlik aralığı hatalı, min 0'dan küçük olamaz, max min'den küçük olamaz")
-            exit(1)
-
-        try:
-            min_depth = self.driver.find_element(By.XPATH, MIN_DEPTH)
-            min_depth.clear()
-            min_depth.send_keys(min)
-            time.sleep(0.5)
-            max_depth = self.driver.find_element(By.XPATH, MAX_DEPTH)
-            max_depth.clear()
-            max_depth.send_keys(max)
-            time.sleep(0.5)
-        except Exception as e:
-            print(e)
-
-    def set_magnitude(self, min, max):
-        MIN_MAGNITUDE = '//*[@id="min_mag"]'
-        MAX_MAGNITUDE = '//*[@id="max_mag"]'
-
-        if not min or not max:
-            min = 0
-            max = 10
-
-        if min > max or min < 0:
-            print("Siddet aralığı hatalı, min 0'dan küçük olamaz, max min'den küçük olamaz")
-
-        try:
-            min_magnitude = self.driver.find_element(By.XPATH, MIN_MAGNITUDE)
-            min_magnitude.clear()
-            min_magnitude.send_keys(min)
-            time.sleep(0.5)
-            max_magnitude = self.driver.find_element(By.XPATH, MAX_MAGNITUDE)
-            max_magnitude.clear()
-            max_magnitude.send_keys(max)
-            time.sleep(0.5)
-        except Exception as e:
-            print(e)
-
-    def set_sorting(self, choose):
-        ORDERED_BY = '//*[@id="myPost"]/fieldset/table/tbody/tr[12]/td[2]/select'
-        ALLOWED_VALUES = ["Origin Time UTC", "Longitude", "Latitude", "Magnitude", "Depth"]
-
-        if choose not in ALLOWED_VALUES:
-            print("Varolan değer ile devam ediliyor: ", "Origin Time UTC")
-            choose = "Origin Time UTC"
-
-        try:
-            dropdown_element = Select(self.driver.find_element(By.XPATH, ORDERED_BY))
-            dropdown_element.select_by_visible_text(choose)
-        except Exception as e:
-            print(e)
-
-    def set_asc_desc(self, choose):
-        ORDER_TYPE = ["ascending", "descending"]
-        ASC_DESC = '//*[@id="myPost"]/fieldset/table/tbody/tr[12]/td[3]/select'
-
-        if choose.lower() not in ORDER_TYPE:
-            choose = "descending"
-            print("Kullanıcı herhangi bir değer girmedi, otomatik olarak descending seçildi")
-
-        try:
-            sorting_value = Select(self.driver.find_element(By.XPATH, ASC_DESC))
-            sorting_value.select_by_visible_text(choose.lower())
-        except Exception as e:
-            print(e)
-
-    def apply_changes(self):
-        APPLY_FILTER_BUTTON = '//*[@id="myPost"]/fieldset/div/input[1]'
-
-        try:
-            apply_button = self.driver.find_element(By.XPATH, APPLY_FILTER_BUTTON)
-            apply_button.click()
-        except Exception as e:
-            print(e)
-
-        time.sleep(4)
-
-    def export_data_to_excel_file(self, file_name):
-        all_tables = pd.read_html(self.driver.page_source, attrs={"class": "index"})
-        df = all_tables[0]
-        df.to_excel(file_name)
-
-    def filter_based_on_city(self, city, file_name):
-        # n could be year or month or day
-        all_tables = pd.read_html(self.driver.page_source, attrs={"class": "index"})
-        df = all_tables[0]
-        filtered_df = df[df["Yer-Region Name"].str.contains(unidecode.unidecode(city), case=False)]
-        filtered_df.to_excel(file_name)
-
-    def set_dates(self, from_date, to_date):
-        if self.check_date_time(from_date) and self.check_date_time(to_date):
-            from_year, from_month, from_day = from_date.split("-")
-            to_year, to_month, to_day = to_date.split("-")
-            self.select_from_date(from_year, from_month, from_day)
-            self.select_to_year(to_year, to_month, to_day)
-
-    def search_and_filter_on_kandilli(self, from_date, to_date, city):
-        self.driver.get(SEARCH_RECENT_FOR_EVENTS)
-        self.set_dates(from_date, to_date)
-        file_name = f"{city.lower()}_depremleri_{from_date}_den_beri.xlsx"
-
-        self.apply_changes()
-        try:
-            self.filter_based_on_city(city, file_name)
-        except Exception as ex:
-            print(ex)
-            exit(1)
-        print(f"{city} için {from_date} den beri olan deprem verisi:\n {file_name} dosyasına kaydedildi.")
-
-    def search_on_kandilli_with_selenium(
-        self, start_date, end_date, min_depth, max_depth, min_magnitude, max_magnitude, sorting, asc_desc
-    ):
-        self.driver.get(SEARCH_RECENT_FOR_EVENTS)
-
-        self.set_dates(start_date, end_date)
-        self.set_depth(min_depth, max_depth)
-        self.set_magnitude(min_magnitude, max_magnitude)
-        self.set_sorting(sorting)
-        self.set_asc_desc(asc_desc)
-        self.apply_changes()
-
+    def export_data_to_excel_file(self, source, city="", filter_city=False):
         timestamp = dt.datetime.now().strftime("%d_%m_%Y")
-        data_file_name = "deprem_data_" + timestamp + ".xlsx"
+
+        if filter_city:
+            data_file_name = "deprem_data_" + city + "_" + timestamp + ".xlsx"
+        else:
+            data_file_name = "deprem_data_" + timestamp + ".xlsx"
+
         try:
-            self.export_data_to_excel_file(data_file_name)
+            all_tables = pd.read_html(source, attrs={"class": "index"})
+            df = all_tables[0]
+            if filter_city:
+                df = df[df["Yer-Region Name"].str.contains(unidecode.unidecode(city), case=False)]
+            df.to_excel(data_file_name)
         except Exception as e:
             print(e)
             exit(1)
         print(f"Deprem verileri {data_file_name} excel dosyasina aktarildi\n ")
 
+    def search_and_filter_on_kandilli(self, from_date, to_date, city):
+        resp = self.search_on_kandilli_with_requests(from_date, to_date)
+        self.export_data_to_excel_file(source=resp, city=city, filter_city=True)
+
+    def search_on_kandilli_with_requests(
+        self,
+        start_date,
+        end_date,
+        min_depth=0,
+        max_depth=50,
+        min_magnitude=1,
+        max_magnitude=7,
+        sorting="Origin Time UTC",
+        asc_desc="descending",
+    ):
+        from_year, from_month, from_day = start_date.split("-")
+        to_year, to_month, to_day = end_date.split("-")
+        # create POST request to get data
+        try:
+            data = {
+                "MIME Type": "application/x-www-form-urlencoded",
+                "fromTY": from_year,  # 1900-2020
+                "fromTM": from_month,  # 1-12
+                "fromTD": from_day,  # 1-31
+                "toY": to_year,  # 1900-2020
+                "toM": to_month,  # 1-12
+                "toD": to_day,  # 1-31
+                "min_lat": "",  # 35-42
+                "max_lat": "",
+                "min_long": "",
+                "max_long": "",
+                "min_depth": min_depth,  # 0-700
+                "max_depth": max_depth,  # 0-700
+                "min_mag": min_magnitude,  # 0-10
+                "max_mag": max_magnitude,  # 0-10
+                "sort": sorting,  # Origin Time UTC, Longitude, Latitude, Magnitude, Depth
+                "desc": asc_desc.lower(),  # ascending or descending
+                "get_events": "true",
+            }
+            user_request = requests.post(
+                SEARCH_RECENT_FOR_EVENTS,
+                data=data,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                },
+            )
+            if user_request.status_code == 200:
+                return user_request.text
+            else:
+                print("Kandilli'den veri çekilemedi")
+                print(f"Sunucu cevabı: {user_request.status_code}")
+        except Exception as e:
+            print(e)
+            exit(1)
+
 
 def retrive_data_from_kandilli(city, time_interval):
-    with Deprem(is_selenium_active=False) as deprem_bot:
+    with Deprem() as deprem_bot:
         deprem_bot.check_city_input(city)
         depremler = deprem_bot.get_data_from_kandilli()
         # extract data is either sending message to telegram or printing to console
         deprem_bot.extract_data(depremler, city, time_interval)
 
 
+# option #3
+def search_based_on_city(date, city):
+    if date[-1] not in ["A", "Y", "D"]:
+        print("Kabul edilen zaman dilimleri: A (Ay), Y (Yil), D (Gun) \n")
+        print("Yanlış zaman dilimi belirttiniz, program kapatılıyor...")
+        exit(1)
+
+    # take digit part of the string
+    time_interval = date[:-1]
+    if not time_interval.isdigit():
+        print("Zaman dilimi rakam olmalıdır. Program kapatiliyor...")
+        exit(1)
+
+    if date[-1] == "A":
+        from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 30)
+    if date[-1] == "Y":
+        from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 365)
+    if date[-1] == "D":
+        from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval))
+
+    from_date = from_date.strftime("%Y-%m-%d")
+    now_date = dt.datetime.now().strftime("%Y-%m-%d")
+
+    with Deprem() as deprem_bot:
+        deprem_bot.check_city_input(city)
+        deprem_bot.search_and_filter_on_kandilli(from_date, now_date, city)
+
+
+def check_telegram_token_and_chat_id():
+    try:
+        return TELEGRAM_CHAT_ID is not None and TELEGRAM_TOKEN is not None
+    except TypeError:
+        return False
+
+
+def check_time_interval_value():
+    try:
+        return TIME_INTERVAL[-1] in ["A", "Y", "D"] and TIME_INTERVAL[:-1].isdigit()
+    except TypeError:
+        return False
+
+
 if __name__ == "__main__":
-    if TELEGRAM_CHAT_ID is not None or TELEGRAM_TOKEN is not None:
+    if check_telegram_token_and_chat_id() and not check_time_interval_value():
         retrive_data_from_kandilli(CITY_TO_BE_CHECKED, TIME_INTERVAL)
+        exit(0)
+
+    if check_time_interval_value():
+        if CITY_TO_BE_CHECKED is None:
+            print("CITY_TO_BE_CHECKED degiskeni bos olamaz")
+            exit(1)
+        search_based_on_city(city=CITY_TO_BE_CHECKED, date=TIME_INTERVAL)
         exit(0)
 
     print("Deprem veri çekme programı başlatılıyor...")
@@ -466,51 +379,35 @@ if __name__ == "__main__":
         user_input = input("Büyüklük aralığı belirlemek istiyor musunuz ? (e/h)\n")
 
         if user_input == "e":
-            min_magnitude = float(input("Minimum buyukluk: (Richter)\n"))
-            max_magnitude = float(input("Maksimum buyukluk: (Richter)\n"))
+            min_magnitude = float(input("Minimum büyüklük: (Richter)\n"))
+            max_magnitude = float(input("Maksimum büyüklük: (Richter)\n"))
 
         user_input = input("Siralamak istiyor musunuz ? (e/h)\n")
 
         if user_input == "e":
+            order_options = ["Origin Time UTC", "Longitude", "Latitude", "Magnitude", "Depth"]
             ordered_by = input("Siralanma kriteri: *(Origin Time UTC, Longitude, Latitude, Magnitude, Depth)*\n")
+            while ordered_by not in order_options:
+                print("Hatali giris yaptiniz, lutfen tekrar deneyiniz")
+                ordered_by = input("Siralanma kriteri: *(Origin Time UTC, Longitude, Latitude, Magnitude, Depth)*\n")
+            sorting_options = ["ascending", "descending"]
             sorting_type = input("Siralama tipi: *(Ascending, Descending)*\n")
+            while sorting_type.lower() not in sorting_options:
+                print("Hatali giris yaptiniz, lutfen tekrar deneyiniz")
+                sorting_type = input("Siralama tipi: *(Ascending, Descending)*\n")
 
-        with Deprem(is_selenium_active=True) as deprem_bot:
-            dep = deprem_bot.search_on_kandilli_with_selenium(
+        with Deprem() as deprem_bot:
+            source = deprem_bot.search_on_kandilli_with_requests(
                 start_date, end_date, min_depth, max_depth, min_magnitude, max_magnitude, ordered_by, sorting_type
             )
+            deprem_bot.export_data_to_excel_file(source)
 
     if choose == "3":
         city = input("Sehir giriniz: ")
         date = input(
             "Geçmişe dair verileri almak için aşağıda belirtildiği şekilde zaman belirtiniz:\n * 3A - Son 3 Aydaki veriler\n * 3Y - Son 3 Yildaki veriler\n * 3D - Son 3 Gunluk veriler\n"
         )
-
-        if date[-1] not in ["A", "Y", "D"]:
-            print("Kabul edilen zaman dilimleri: A (Ay), Y (Yil), D (Gun) \n")
-            print("Yanlis zaman dilimi belirttiniz, program kapatiliyor...")
-            exit(1)
-
-        # take digit part of the string
-        time_interval = date[:-1]
-        if not time_interval.isdigit():
-            print("Zaman dilimi rakam olmalıdır. Program kapatiliyor...")
-            exit(1)
-
-        if date[-1] == "A":
-            from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 30)
-        if date[-1] == "Y":
-            from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval) * 365)
-        if date[-1] == "D":
-            from_date = dt.datetime.now() - dt.timedelta(days=int(time_interval))
-
-        from_date = from_date.strftime("%Y-%m-%d")
-        now_date = dt.datetime.now().strftime("%Y-%m-%d")
-
-        with Deprem(is_selenium_active=True) as deprem_bot:
-            deprem_bot.check_city_input(city)
-            # extract data is either sending message to telegram or printing to console
-            deprem_bot.search_and_filter_on_kandilli(from_date, now_date, city)
+        search_based_on_city(date, city)
 
     if choose not in ["1", "2", "3"]:
         print("Yanlis secim yaptiniz, program kapatiliyor...")

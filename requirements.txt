@@ -1,8 +1,6 @@
 bs4
 requests
 unidecode
-selenium
-webdriver-manager
 pandas
 lxml
 openpyxl

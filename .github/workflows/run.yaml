@@ -15,19 +15,20 @@ on:
         default: "Kayseri"
 
       zaman_araligi:
-        description: "Bildirim almak istediğiniz zaman aralığı, dakika cinsinden veya * 3A -> Son 3 Ay, * 3Y-> Son 3 Yıl, * 3G -> Son 3 Gün olarak belirtiniz"
+        description: "
+          Bildirim almak istediğiniz zaman aralığı, dakika cinsinden veya
+          zaman bazlı verileri 'artifact' dosyasına yüklemek için
+          * 3A -> Son 3 Ay
+          * 3Y-> Son 3 Yıl
+          * 3G -> Son 3 Gün olarak belirtiniz.
+          Bu değer G, Y veya A ile biterse zaman bazlı veriler 'artifact' dosyasına yüklenecektir.
+          "
         required: false
         default: "5"
-
-      veriyi_artifact_icerisine_kaydet:
-        description: "True/False"
-        required: false
-        default: "False"
 
 env:
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-  SAVE_DATA_TO_ARTIFACT: "False"
 
 permissions:
   contents: read
@@ -58,11 +59,16 @@ jobs:
       - name: Run deprem bot on demand
         if: ${{ github.event_name != 'schedule' }}
         run: |
-          python deprem.py
+          # if TIME_INTERVAL ends with 'A' or 'Y' or 'G', it means that we want to get data for a specific period
+          if [[ "${{ github.event.inputs.zaman_araligi }}" == *["A","Y","G"] ]]; then
+            # set env.SAVE_DATA_TO_ARTIFACT to True
+            SAVE_DATA_TO_ARTIFACT="True" python deprem.py
+          else
+            python deprem.py
+          fi
         env:
           CITY_TO_BE_CHECKED: "${{ github.event.inputs.sehir }}"
           TIME_INTERVAL: ${{ github.event.inputs.zaman_araligi }}
-          SAVE_DATA_TO_ARTIFACT: ${{ github.event.inputs.veriyi_artifact_icerisine_kaydet }}
 
       - name: Run deprem bot on schedule
         if: ${{ github.event_name == 'schedule' }}

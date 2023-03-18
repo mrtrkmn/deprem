@@ -233,27 +233,33 @@ class Deprem:
         to_year, to_month, to_day = end_date.split("-")
         # create POST request to get data
         try:
+            data = {
+                "MIME Type": "application/x-www-form-urlencoded",
+                "fromTY": from_year,  # 1900-2020
+                "fromTM": from_month,  # 1-12
+                "fromTD": from_day,  # 1-31
+                "toY": to_year,  # 1900-2020
+                "toM": to_month,  # 1-12
+                "toD": to_day,  # 1-31
+                "min_lat": "",  # 35-42
+                "max_lat": "",
+                "min_long": "",
+                "max_long": "",
+                "min_depth": min_depth,  # 0-700
+                "max_depth": max_depth,  # 0-700
+                "min_mag": min_magnitude,  # 0-10
+                "max_mag": max_magnitude,  # 0-10
+                "sort": sorting,  # Origin Time UTC, Longitude, Latitude, Magnitude, Depth
+                "desc": asc_desc.lower(),  # ascending or descending
+                "get_events": "true",
+            }
             user_request = requests.post(
                 SEARCH_RECENT_FOR_EVENTS,
-                data={
-                    "MIME Type": "application/x-www-form-urlencoded",
-                    "fromTY": from_year,  # 1900-2020
-                    "fromTM": from_month,  # 1-12
-                    "fromTD": from_day,  # 1-31
-                    "toY": to_year,  # 1900-2020
-                    "toM": to_month,  # 1-12
-                    "toD": to_day,  # 1-31
-                    "min_lat": "",  # 35-42
-                    "max_lat": "",
-                    "min_long": "",
-                    "max_long": "",
-                    "min_depth": min_depth,  # 0-700
-                    "max_depth": max_depth,  # 0-700
-                    "min_mag": min_magnitude,  # 0-10
-                    "max_mag": max_magnitude,  # 0-10
-                    "sort": sorting.capitalize(),  # Origin Time UTC, Longitude, Latitude, Magnitude, Depth
-                    "desc": asc_desc.lower(),  # ascending or descending
-                    "get_events": "true",
+                data=data,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                 },
             )
             if user_request.status_code == 200:
@@ -303,19 +309,25 @@ def search_based_on_city(date, city):
 
 
 def check_telegram_token_and_chat_id():
-    return TELEGRAM_CHAT_ID is not None and TELEGRAM_TOKEN is not None
+    try:
+        return TELEGRAM_CHAT_ID is not None and TELEGRAM_TOKEN is not None
+    except TypeError:
+        return False
 
 
 def check_time_interval_value():
-    return TIME_INTERVAL[-1] in ["A", "Y", "D"] and TIME_INTERVAL[:-1].isdigit()
+    try:
+        return TIME_INTERVAL[-1] in ["A", "Y", "D"] and TIME_INTERVAL[:-1].isdigit()
+    except TypeError:
+        return False
 
 
 if __name__ == "__main__":
-    if check_telegram_token_and_chat_id and not check_time_interval_value:
+    if check_telegram_token_and_chat_id() and not check_time_interval_value():
         retrive_data_from_kandilli(CITY_TO_BE_CHECKED, TIME_INTERVAL)
         exit(0)
 
-    if check_time_interval_value:
+    if check_time_interval_value():
         if CITY_TO_BE_CHECKED is None:
             print("CITY_TO_BE_CHECKED degiskeni bos olamaz")
             exit(1)

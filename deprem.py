@@ -307,14 +307,9 @@ if __name__ == "__main__":
         retrive_data_from_kandilli(CITY_TO_BE_CHECKED, TIME_INTERVAL)
         exit(0)
 
-    if SAVE_DATA_TO_ARTIFACT == "True":
+    if TIME_INTERVAL[-1] in ["A", "Y", "D"] and TIME_INTERVAL[:-1].isdigit():
         if CITY_TO_BE_CHECKED is None:
             print("CITY_TO_BE_CHECKED degiskeni bos olamaz")
-            exit(1)
-        if TIME_INTERVAL[-1] not in ["A", "Y", "D"]:
-            print(
-                "TIME_INTERVAL degiskeni kabul edilen zaman dilimleri: A (Ay), Y (Yil), D (Gun), veriyi kaydetmet istediğinizde. \n"
-            )
             exit(1)
         search_based_on_city(city=CITY_TO_BE_CHECKED, date=TIME_INTERVAL)
         exit(0)

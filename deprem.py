@@ -302,12 +302,20 @@ def search_based_on_city(date, city):
         deprem_bot.search_and_filter_on_kandilli(from_date, now_date, city)
 
 
+def check_telegram_token_and_chat_id():
+    return TELEGRAM_CHAT_ID is not None and TELEGRAM_TOKEN is not None
+
+
+def check_time_interval_value():
+    return TIME_INTERVAL[-1] in ["A", "Y", "D"] and TIME_INTERVAL[:-1].isdigit()
+
+
 if __name__ == "__main__":
-    if TELEGRAM_CHAT_ID is not None or TELEGRAM_TOKEN is not None:
+    if check_telegram_token_and_chat_id and not check_time_interval_value:
         retrive_data_from_kandilli(CITY_TO_BE_CHECKED, TIME_INTERVAL)
         exit(0)
 
-    if TIME_INTERVAL[-1] in ["A", "Y", "D"] and TIME_INTERVAL[:-1].isdigit():
+    if check_time_interval_value:
         if CITY_TO_BE_CHECKED is None:
             print("CITY_TO_BE_CHECKED degiskeni bos olamaz")
             exit(1)

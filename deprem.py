@@ -112,10 +112,11 @@ CITIES = [
 class Deprem:
     def __init__(self):
         #    convert string input to int
-        if environ.get("TIME_INTERVAL"):
-            self.time_interval = int(environ.get("TIME_INTERVAL"))
-        else:
-            self.time_interval = 5
+        if not environ.get("SAVE_DATA_TO_ARTIFACT"):
+            if environ.get("TIME_INTERVAL"):
+                self.time_interval = int(environ.get("TIME_INTERVAL"))
+            else:
+                self.time_interval = 5
 
     def __enter__(self):
         return self

@@ -310,7 +310,7 @@ def search_based_on_city(date, city):
 
 def check_telegram_token_and_chat_id():
     try:
-        return TELEGRAM_CHAT_ID is not None and TELEGRAM_TOKEN is not None
+        return TELEGRAM_CHAT_ID != "" and TELEGRAM_TOKEN != ""
     except TypeError:
         return False
 

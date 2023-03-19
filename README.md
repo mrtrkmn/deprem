@@ -2,6 +2,23 @@
 
 Kandilli rasathanesinin yayınladığı verilere göre şehir filtreleyerek, Telegram üzerinden bildirim almanızı sağlayan küçük bir kod parçası. 
 
+- [Github üzerinden nasıl çalıştırılır ?](#github-üzerinden-nasıl-çalıştırılır-)
+- [Bilgisayarınız üzerinde nasıl çalıştırılır ?](#bilgisayarınız-üzerinde-nasıl-çalıştırılır-)
+- [Telegram entegrasyonu ile nasıl kullanılır ?](#telegram-entegrasyonu-ile-nasıl-kullanılır-)
+
+# Github üzerinden nasıl çalıştırılır ? 
+
+1. Projeyi forkla
+2. Workflowları aktifleştir 
+3. Actions sekmesinden "Run Deprem Bot" workflow dosyasını çalıştır.
+
+Adımlar aşağıdaki video da gösterilmiştir. 
+
+https://user-images.githubusercontent.com/13614433/226146876-5ce2f393-aecf-4858-baf6-c2791db8f9e3.mov
+
+
+
+
 # Bilgisayarınız üzerinde nasıl çalıştırılır ?
 
 Bilgisayarınızda çalıştırmak için Python 3.8 ve üzeri sürümler gerekmektedir.
